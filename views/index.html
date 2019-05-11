@@ -10,21 +10,29 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
- <div class="tips">爬虫初始化完成，点击开始抓取数据</div>
+ <div class="tips">爬虫初始化完成,当前抓取第<b class="page"></b>页</div>
  <div class="btn-wrap">
-  <div class="el-button" data-dir="pre">抓取上一页</div>
+  <div class="el-button el-success" data-dir="pre">抓取上一页</div>
   <div class="el-button" data-dir="next">抓取下一页</div>
 </div>
  <ul class="wrap">
  </ul>
+ <div class="el-loading-mask"><div class="el-loading-spinner"><svg viewBox="25 25 50 50" class="circular"><circle cx="50" cy="50" r="20" fill="none" class="path"></circle></svg></div></div>
  <script>
  $(function(){
-   var page=1;
+   var page=0;
    var isLoading=false;
    $(".el-button").click(function(){
+     var $this=$(this);
      if(isLoading) return;
-     isLoading=true;
      var isNext=$(this).attr("data-dir")=="next";
+     isLoading=true;
+     if(!isNext && page<=1){
+      isLoading=false;
+      return;
+     }
+     isNext? page++ :page--;
+     $(".el-loading-mask").show();
       $.ajax({
         method:"GET",
         url:"/getData",
@@ -32,29 +40,34 @@
           page:page
         },
         success:function(res){
-           isNext? page++ :page--;
+           $(".page").text(page)
+           page<=1? $("[data-dir=pre]").addClass("el-disable"):$("[data-dir=pre]").removeClass("el-disable");
            isLoading=false;
            if(res.code==0){
              var _html="";
              for(var i=0;i<res.data.length;i++){
-              _html+="<li>";
+              _html+="<li class='item'><section>";
               _html+="<p><span>序号：</span><em>"+i+"</em></p>"
               _html+="<p><span>标题：</span><em>"+res.data[i].title+"</em></p>"
+              _html+="<p><span>价格：</span><em>"+res.data[i].money+"</em></p>"
               _html+="<p><span>大小：</span><em>"+res.data[i].size+"</em></p>"
-              _html+="<p><span>位置：</span><em>"+res.data[i].loca+"</em></p>"
-              _html+="<p><span>地铁：</span><em>"+res.data[i].train+"</em></p>"
               _html+="<p><span>链接：</span><a href='"+res.data[i].url+"'>点我访问</a></p>"
-              _html+="</li>";
+              _html+="</section></li>";
              }
            }
-           $(".wrap").append(_html)
+           $(".wrap").html(_html)
+           
+           $(".el-loading-mask").hide();
         },
         error:function(err){
             console.log(err)
+            $(".page").text(page)
+            $(".el-loading-mask").hide();
         }
           
       })
    })
+   $("[data-dir=next]").trigger("click")
  })
  </script>
 </body>

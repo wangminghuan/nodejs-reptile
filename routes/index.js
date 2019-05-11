@@ -20,11 +20,13 @@ const request=(url)=>{
            const _title=($(this).children(".des").children("h2").text().trim());
            const _size=($(this).children(".des").children(".room").text().trim());
            const _url=($(this).children(".des").children("h2").children("a").attr("href"));
+           const _money=$(this).find(".money").text().trim();
            (!!_url && !!_title) &&  myData.push({ 
              img:_img, 
              size:_size,
              title:_title,
              url:_url,
+             money:_money
             })
       })
       resolve({
